@@ -1,0 +1,42 @@
+{
+    "demo": [
+    {
+        "id": "demo-fptp-1",
+        "name": "Board Chair Election (FPTP)",
+        "type": "candidate",
+        "system": "fptp",
+        "options": ["Alice", "Bob", "Charlie"],
+        "votes": [
+            { "id": "v1", "choices": ["Alice"], "createdAt": 0 },
+            { "id": "v2", "choices": ["Bob"], "createdAt": 0 },
+            { "id": "v3", "choices": ["Alice"], "createdAt": 0 }
+        ]
+    },
+    {
+        "id": "demo-prop-1",
+        "name": "Change Theme?",
+        "type": "proposition",
+        "system": "fptp",
+        "options": ["Yes","No","Abstain"],
+        "votes": [
+            { "id": "v1", "choices": ["Yes"], "createdAt": 0 },
+            { "id": "v2", "choices": ["Yes"], "createdAt": 0 },
+            { "id": "v3", "choices": ["No"], "createdAt": 0 },
+            { "id": "v4", "choices": [], "createdAt": 0 }
+        ]
+    },
+    {
+        "id": "demo-irv-1",
+        "name": "IRV Demo",
+        "type": "candidate",
+        "system": "irv",
+        "options": ["A","B","C"],
+        "votes": [
+            { "id": "v1", "choices": ["A","B","C"], "createdAt": 0 },
+            { "id": "v2", "choices": ["B","C","A"], "createdAt": 0 },
+            { "id": "v3", "choices": ["B","A","C"], "createdAt": 0 },
+            { "id": "v4", "choices": ["C","A","B"], "createdAt": 0 }
+        ]
+    }
+]
+}
