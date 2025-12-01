@@ -6,21 +6,25 @@
   "scripts": {
     "build": "tsc",
     "start": "node ./dist/index.js",
+    "engines": { "node": "24.11.1" },
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "author": "LorenzoColitta",
   "license": "MIT",
   "dependencies": {
-    "better-sqlite3": "^8.1.0",
     "discord.js": "^14.11.0",
     "dotenv": "^16.0.0",
+    "pg": "^8.11.0",
     "uuid": "^9.0.0"
   },
+  "optionalDependencies": {
+    "better-sqlite3": "^8.1.0"
+  },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "ts-node": "^10.9.1",
+    "typescript": "^5.1.6",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.1.6"
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.6.6"
 
   },
   "repository": {

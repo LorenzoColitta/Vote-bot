@@ -1,3 +1,4 @@
 # gitginore
 
 *.env
+/.idea/copilot.data.migration.ask2agent.xml
