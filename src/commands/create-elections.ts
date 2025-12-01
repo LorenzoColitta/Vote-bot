@@ -59,11 +59,10 @@ module.exports = {
             ended: false,
             adminReveal: false,
         };
-        saveElection(election);
+        await saveElection(election);
         // post public opening message with buttons
         const embed = electionOpenEmbed({ name, description, options: candidates, endsAt, system, id });
 
-        // Buttons mapping: check => option 0, cross => option 1, zero => option 2, end => admin end
         const btnYes = new ButtonBuilder()
             .setCustomId(`vote_btn:${id}:0`)
             .setLabel(candidates[0] ?? "Option 1")
@@ -92,7 +91,7 @@ module.exports = {
 
         const msg = await interaction.channel.send({ embeds: [embed], components: [row] });
         election.messageId = msg.id;
-        saveElection(election);
+        await saveElection(election);
         // schedule
         scheduleElection(interaction.client, election);
 

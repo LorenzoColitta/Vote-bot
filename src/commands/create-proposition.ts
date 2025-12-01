@@ -56,10 +56,9 @@ module.exports = {
             ended: false,
             adminReveal: false,
         };
-        saveElection(election);
+        await saveElection(election);
         const embed = electionOpenEmbed({ name: question, description: "", options, endsAt, system: "proposition", id });
 
-        // Map first three options to the three quick buttons (Yes/No/Abstain) if available
         const btnYes = new ButtonBuilder()
             .setCustomId(`vote_btn:${id}:0`)
             .setLabel(options[0] ?? "Yes")
@@ -88,7 +87,7 @@ module.exports = {
 
         const msg = await interaction.channel.send({ embeds: [embed], components: [row] });
         election.messageId = msg.id;
-        saveElection(election);
+        await saveElection(election);
         scheduleElection(interaction.client, election);
 
         await interaction.editReply({ content: `Proposition created with ID ${id}`, ephemeral: true });

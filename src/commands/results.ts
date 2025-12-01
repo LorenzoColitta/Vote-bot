@@ -13,9 +13,9 @@ module.exports = {
         await interaction.deferReply({ ephemeral: false });
         const id = interaction.options.getString("id", true);
         const live = interaction.options.getBoolean("live") || false;
-        const election = getElection(id);
+        const election = await getElection(id);
         if (!election) return interaction.editReply({ content: "Election not found." });
-        const votes = getVotesForElection(id);
+        const votes = await getVotesForElection(id);
         const result = computeTally(election, votes);
         const summaryParts: string[] = [];
         if (election.type === "proposition") {

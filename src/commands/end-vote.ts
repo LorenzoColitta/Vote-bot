@@ -11,7 +11,7 @@ module.exports = {
     async execute(interaction: any) {
         await interaction.deferReply({ ephemeral: true });
         const id = interaction.options.getString("id", true);
-        const election = getElection(id);
+        const election = await getElection(id);
         if (!election) return interaction.editReply({ content: "Election not found." });
         if (election.ended) return interaction.editReply({ content: "Election already ended." });
         // finalize

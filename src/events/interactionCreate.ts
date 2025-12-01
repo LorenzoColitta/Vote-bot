@@ -28,7 +28,7 @@ module.exports = {
                     const idx = Number(parts[2]);
                     const { getElection, getVoteByVoter, saveVote, computeVoterHash } = require("../utils/db");
                     const { shortId } = require("../utils/id");
-                    const election = getElection(electionId);
+                    const election = await getElection(electionId);
                     if (!election) {
                         await interaction.reply({ content: "Election not found.", ephemeral: true });
                         return;
@@ -42,10 +42,8 @@ module.exports = {
                         return;
                     }
 
-                    // prepare finalChoices similar to /vote command logic
                     let finalChoices: any[] = [election.options[idx]];
 
-                    // Weighted handling (compute weight from roleWeights on the member)
                     if (election.system === "weighted") {
                         const member = await interaction.guild.members.fetch(interaction.user.id);
                         const roleWeights = election.roleWeights || [];
@@ -60,10 +58,8 @@ module.exports = {
                         finalChoices = [{ choice: election.options[idx], weight: totalWeight }];
                     }
 
-                    // compute one-way hash for this voter -> anonymous in DB
                     const voterHash = computeVoterHash(electionId, interaction.user.id);
 
-                    // create / replace vote (store voterHash internally)
                     const vote = {
                         id: shortId(8),
                         electionId,
@@ -71,7 +67,7 @@ module.exports = {
                         choices: finalChoices,
                         createdAt: Date.now(),
                     };
-                    saveVote(vote);
+                    await saveVote(vote);
 
                     await interaction.reply({ content: `Your vote for **${election.options[idx]}** has been recorded anonymously (you may change it anytime).`, ephemeral: true });
                     return;
@@ -90,7 +86,7 @@ module.exports = {
                     }
                     const { finalizeElection } = require("../utils/scheduler");
                     const { getElection: getE } = require("../utils/db");
-                    const election = getE(electionId);
+                    const election = await getE(electionId);
                     if (!election) {
                         await interaction.reply({ content: "Election not found.", ephemeral: true });
                         return;
@@ -100,7 +96,6 @@ module.exports = {
                         return;
                     }
 
-                    // finalize and reply
                     await finalizeElection(client, electionId);
                     await interaction.reply({ content: `Election **${election.name}** has been finalized by ${interaction.user.tag}.`, ephemeral: true });
                     return;

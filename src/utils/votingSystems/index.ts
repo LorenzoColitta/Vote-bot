@@ -1,8 +1,8 @@
 import { VotingSystem } from "./base";
 import { fptp } from "./fptp";
-import { approval } from "./approval";
+import { approval } from "./approvals"; // file is approvals.ts
 import { irv } from "./irv";
-import { twoRound } from "./tworound";
+import { twoRound } from "./tworounds"; // file is tworounds.ts
 import { stv } from "./stv";
 import { weighted } from "./weighted";
 import { Election, VoteRecord, TallyResult } from "../../types";
