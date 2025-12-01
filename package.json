@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "A Discord voting bot supporting FPTP, IRV, STV, Approval, Two-Round, weighted-role voting, propositions and timed anonymous polls.",
   "main": "dist/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": "24.11.1"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node ./dist/index.js",
-    "engines": { "node": "24.11.1" },
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
   },
   "author": "LorenzoColitta",
@@ -25,7 +28,6 @@
     "ts-node-dev": "^2.0.0",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.6.6"
-
   },
   "repository": {
     "type": "git",
