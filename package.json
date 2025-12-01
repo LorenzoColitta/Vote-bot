@@ -1,0 +1,31 @@
+{
+  "name": "vote-bot",
+  "version": "1.0.0",
+  "description": "A Discord voting bot supporting FPTP, IRV, STV, Approval, Two-Round, weighted-role voting, propositions and timed anonymous polls.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts"
+  },
+  "author": "LorenzoColitta",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^8.1.0",
+    "discord.js": "^14.11.0",
+    "dotenv": "^16.0.0",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.6"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LorenzoColitta/Vote-bot.git"
+  },
+  "private": true
+}
