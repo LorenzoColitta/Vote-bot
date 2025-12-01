@@ -1,8 +1,8 @@
-import { listActiveElections, getElection, endElection, getVotesForElection } from "../db";
+import { listActiveElections, getElection, endElection, getVotesForElection } from "./db";
 import { Client, TextChannel } from "discord.js";
 // import computeTally from the votingSystems index in the same directory
-import { computeTally } from ".";
-import { resultEmbed, makeBar } from "../embeds";
+import { computeTally } from "./votingSystems";
+import { resultEmbed, makeBar } from "./embeds";
 
 const timeouts = new Map<string, NodeJS.Timeout>();
 
