@@ -1,13 +1,15 @@
-import { listActiveElections, getElection, endElection, getVotesForElection } from "./db";
+import { listActiveElections, getElection, endElection, getVotesForElection } from "../db";
 import { Client, TextChannel } from "discord.js";
-import { computeTally } from "./votingSystems";
-import { resultEmbed, makeBar } from "./embeds";
+// import computeTally from the votingSystems index in the same directory
+import { computeTally } from ".";
+import { resultEmbed, makeBar } from "../embeds";
 
 const timeouts = new Map<string, NodeJS.Timeout>();
 
 export function scheduleElection(client: Client, election: any) {
     const remaining = Math.max(0, election.endsAt - Date.now());
     if (remaining <= 0) {
+        // already expired: finalize immediately
         finalizeElection(client, election.id).catch(console.error);
         return;
     }
@@ -24,14 +26,22 @@ export async function loadSchedules(client: Client) {
 export async function finalizeElection(client: Client, id: string) {
     const election = await getElection(id);
     if (!election || election.ended) return;
+
+    // compute tally
     const votes = await getVotesForElection(id);
     const result = computeTally(election, votes);
+
+    // persist end
     await endElection(id);
 
+    // Build embed
     const summaryParts: string[] = [];
     if (election.type === "proposition") {
+        // show Yes/No/Abstain breakdown
         const entries = result.breakdown.map((b: any) => `${b.label}: **${b.count}**`);
         summaryParts.push(entries.join(" • "));
+
+        // determine majority/minority (largest and second)
         const sorted = result.breakdown.slice().sort((a: any, b: any) => b.count - a.count);
         const majority = sorted[0]?.label ?? "—";
         const minority = sorted[1]?.label ?? "—";
@@ -39,6 +49,10 @@ export async function finalizeElection(client: Client, id: string) {
     } else {
         summaryParts.push(`Winner: **${Array.isArray(result.winner) ? result.winner.join(", ") : result.winner ?? "—"}**`);
         summaryParts.push(`Total Votes: **${result.totalVotes}**`);
+        if (result.details?.rounds) {
+            const lastRound = result.details.rounds.slice(-1)[0];
+            summaryParts.push(`Final round counts: ${Object.entries(lastRound.counts).map(([k, v]) => `${k}: ${v}`).join(", ")}`);
+        }
     }
 
     const totalForBar = result.totalVotes + (result.abstain || 0);
