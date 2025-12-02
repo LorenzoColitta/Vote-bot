@@ -63,7 +63,9 @@ export async function saveElection(election: any) {
             ended: election.ended ? 1 : 0,
             adminreveal: election.adminReveal ? 1 : 0,
         };
-        const { error } = await supabase!.from("elections").upsert(row, { returning: "minimal" });
+        // NOTE: do not pass an unsupported options object (e.g. { returning: "minimal" }) —
+        // the PostgREST TypeScript types for upsert do not include `returning`.
+        const { error } = await supabase!.from("elections").upsert(row);
         if (error) throw error;
         return;
     }
@@ -154,7 +156,8 @@ export async function saveVote(vote: any) {
             choices: vote.choices ?? [],
             createdat: vote.createdAt ?? Date.now(),
         };
-        const { error } = await supabase!.from("votes").upsert(row, { returning: "minimal" });
+        // remove unsupported options object here too
+        const { error } = await supabase!.from("votes").upsert(row);
         if (error) throw error;
         return;
     }
