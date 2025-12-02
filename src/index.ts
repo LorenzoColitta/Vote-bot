@@ -1,3 +1,4 @@
+import http from "http";
 import { Client, GatewayIntentBits, Collection, REST, Routes } from "discord.js";
 import dotenv from "dotenv";
 import fs from "fs";
@@ -13,7 +14,12 @@ if (!TOKEN) {
     process.exit(1);
 }
 
-const client: any = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers] });
+// Build intents array and make GuildMembers optional via env flag
+const intents = [GatewayIntentBits.Guilds];
+if (process.env.ENABLE_GUILD_MEMBERS === "true") {
+    intents.push(GatewayIntentBits.GuildMembers);
+}
+const client: any = new Client({ intents });
 
 client.commands = new Collection();
 
@@ -43,22 +49,65 @@ if (fs.existsSync(eventsPath)) {
 }
 
 client.login(TOKEN).then(async () => {
+    // register commands only if CLIENT_ID is set; otherwise warn but continue
     if (!CLIENT_ID) {
         console.warn("CLIENT_ID not set, skipping global command registration.");
-        return;
+    } else {
+        const rest = new REST({ version: "10" }).setToken(TOKEN);
+        const cmds: any[] = [];
+        for (const command of client.commands.values()) {
+            cmds.push(command.data.toJSON());
+        }
+        try {
+            console.log("Registering application commands...");
+            await rest.put(Routes.applicationCommands(CLIENT_ID), { body: cmds });
+            console.log("Commands registered.");
+        } catch (err) {
+            console.error("Failed to register commands:", err);
+        }
     }
-    const rest = new REST({ version: "10" }).setToken(TOKEN);
-    const cmds: any[] = [];
-    for (const command of client.commands.values()) {
-        cmds.push(command.data.toJSON());
-    }
+
+    // Load schedules (always attempt, regardless of CLIENT_ID)
     try {
-        console.log("Registering application commands...");
-        await rest.put(Routes.applicationCommands(CLIENT_ID), { body: cmds });
-        console.log("Commands registered.");
+        await loadSchedules(client);
+        console.log("Loaded election schedules");
     } catch (err) {
-        console.error("Failed to register commands:", err);
+        console.error("Failed loading schedules:", err);
     }
 });
 
-// load schedules on ready from events/ready
+// Small HTTP health server so hosts that expect a bound port (Render/pella) succeed
+const PORT = Number(process.env.PORT) || 3000;
+
+const server = http.createServer((_req, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("OK\n");
+});
+
+server.listen(PORT, () => {
+    console.log(`HTTP health server listening on port ${PORT}`);
+});
+
+// graceful shutdown: close http server and destroy discord client
+const shutdown = async () => {
+    console.log("Shutting down...");
+    try {
+        server.close(() => {
+            console.log("HTTP server closed");
+        });
+    } catch (e) {
+        console.error("Error closing HTTP server:", e);
+    }
+    try {
+        if (client) {
+            await client.destroy();
+            console.log("Discord client destroyed");
+        }
+    } catch (e) {
+        console.error("Error destroying Discord client:", e);
+    }
+    // give a moment for cleanup then exit
+    setTimeout(() => process.exit(0), 1000);
+};
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
