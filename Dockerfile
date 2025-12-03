@@ -14,5 +14,5 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 # runtime health endpoint file will be in dist when built from src
-EXPOSE 3000
+EXPOSE 3000+-
 CMD ["node", "dist/index.js"]
