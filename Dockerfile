@@ -2,13 +2,13 @@
 FROM node:24-bullseye-slim AS build
 WORKDIR /app
 
-# copy package json first for layer caching
+# copy package files so install can cache
 COPY package*.json ./
 
-# install dev deps so tsc is available for the build
-RUN npm install --no-audit --no-fund
+# install dependencies but do NOT run lifecycle scripts (postinstall)
+RUN npm install --no-audit --no-fund --ignore-scripts
 
-# copy source and build
+# copy source (including tsconfig.json) and run the build
 COPY . .
 RUN npm run build
 
@@ -17,14 +17,13 @@ FROM node:24-bullseye-slim AS prod
 WORKDIR /app
 ENV NODE_ENV=production
 
-# Copy only package files and install production deps.
+# copy only package files for prod deps install
 COPY package*.json ./
 
-# Install only production deps and DO NOT run lifecycle scripts (pre/postinstall)
-# --ignore-scripts prevents postinstall (which would try to run tsc)
+# install only production deps and do not run lifecycle scripts
 RUN npm install --omit=dev --no-audit --no-fund --ignore-scripts
 
-# Copy built artifacts
+# copy built JS
 COPY --from=build /app/dist ./dist
 
 EXPOSE 3000
