@@ -2,7 +2,7 @@
 FROM node:24-bullseye-slim AS build
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
 
@@ -11,8 +11,7 @@ FROM node:24-bullseye-slim
 WORKDIR /app
 ENV NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install --omit=dev --no-audit --no-fund
 COPY --from=build /app/dist ./dist
-# runtime health endpoint file will be in dist when built from src
-EXPOSE 3000+-
+EXPOSE 3000
 CMD ["node", "dist/index.js"]
