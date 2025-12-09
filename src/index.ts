@@ -76,32 +76,10 @@ client.login(TOKEN).then(async () => {
     }
 });
 
-// Small HTTP health + readiness server so hosts that expect a bound port (Render/pella) succeed
+// Small HTTP health server so hosts that expect a bound port (Render/pella) succeed
 const PORT = Number(process.env.PORT) || 3000;
-let shuttingDown = false;
 
-const server = http.createServer((req, res) => {
-    // readiness endpoint: return 200 only if bot is logged in and not shutting down
-    if (req.url === "/healthz") {
-        const ready = !!client.user && !shuttingDown;
-        res.writeHead(ready ? 200 : 503, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
-            status: ready ? "ok" : "starting",
-            uptime: process.uptime(),
-            ts: new Date().toISOString(),
-            botUser: client.user ? `${client.user.username}#${client.user.discriminator}` : null
-        }) + "\n");
-        return;
-    }
-
-    // root / basic liveness endpoint
-    if (req.url === "/" || req.url === "/health") {
-        res.writeHead(200, { "Content-Type": "text/plain" });
-        res.end(shuttingDown ? "Shutting down\n" : "OK\n");
-        return;
-    }
-
-    // fallback
+const server = http.createServer((_req, res) => {
     res.writeHead(200, { "Content-Type": "text/plain" });
     res.end("OK\n");
 });
@@ -110,13 +88,9 @@ server.listen(PORT, () => {
     console.log(`HTTP health server listening on port ${PORT}`);
 });
 
-// graceful shutdown: stop accepting new requests, wait for inflight tasks, then destroy client
+// graceful shutdown: close http server and destroy discord client
 const shutdown = async () => {
-    if (shuttingDown) return;
-    shuttingDown = true;
     console.log("Shutting down...");
-
-    // stop accepting new connections
     try {
         server.close(() => {
             console.log("HTTP server closed");
@@ -124,12 +98,6 @@ const shutdown = async () => {
     } catch (e) {
         console.error("Error closing HTTP server:", e);
     }
-
-    // give handlers a short grace period to finish (adjust as needed)
-    const GRACE_MS = Number(process.env.SHUTDOWN_GRACE_MS) || 10000;
-    console.log(`Waiting ${GRACE_MS}ms for in-flight work to finish...`);
-    await new Promise((resolve) => setTimeout(resolve, GRACE_MS));
-
     try {
         if (client) {
             await client.destroy();
@@ -138,18 +106,8 @@ const shutdown = async () => {
     } catch (e) {
         console.error("Error destroying Discord client:", e);
     }
-
-    // exit
+    // give a moment for cleanup then exit
     setTimeout(() => process.exit(0), 1000);
 };
-
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
-
-// log unhandled errors so Render/host logs show cause
-process.on("uncaughtException", (err) => {
-    console.error("uncaughtException:", err);
-});
-process.on("unhandledRejection", (reason) => {
-    console.error("unhandledRejection:", reason);
-});
